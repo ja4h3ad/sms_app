@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Demo SMS App</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            function updateRecipientResponse() {
+                $.ajax({
+                    url: "/inbound-sms",
+                    method: "GET",
+                    success: function(data) {
+                        // Update the content of the recipient_response div
+                        $('#recipient_response').html('');
+                        for (var i = 0; i < data.length; i++) {
+                            $('#recipient_response').append('<p>' + JSON.stringify(data[i]) + '</p>');
+                        }
+                    },
+                    error: function() {
+                        console.log("Error occurred while fetching recipient response");
+                    }
+                });
+            }
+
+            function updateDLRData() {
+                $.ajax({
+                    url: "/delivery-receipt",
+                    method: "GET",
+                    success: function(data) {
+                        // Update the content of the dlr_data div
+                        $('#dlr_data').html('');
+                        $('#dlr_data').append('<p>' + JSON.stringify(data) + '</p>');
+                    },
+                    error: function() {
+                        console.log("Error occurred while fetching DLR data");
+                    }
+                });
+            }
+
+            // Function call that refreshes the recipient response and DLR data every 5 seconds
+            updateRecipientResponse();
+            updateDLRData();
+            setInterval(updateRecipientResponse, 5000); // Refresh recipient response every 5 seconds
+            setInterval(updateDLRData, 5000); // Refresh DLR data every 5 seconds
+        });
+    </script>
+</head>
+<body>
+    <h1>Demo SMS App</h1>
+    <form method="POST" action="/send_sms">
+        <label for="destination_number">Destination Number:</label>
+        <input type="text" id="destination_number" name="destination_number" required><br><br>
+
+        <label for="sms_content">SMS Content:</label>
+        <textarea id="sms_content" name="sms_content" required></textarea><br><br>
+
+        <input type="submit" value="Send SMS">
+    </form>
+
+    <div id="message_status">
+        {{ message_status_data | safe}}
+        <!-- Display the message status here -->
+    </div>
+
+    <div id="recipient_response">
+        {% for sms in response_sms_data %}
+        <p>{{ sms }}</p>
+        {% endfor %}
+        <!-- Display the recipient's response here -->
+    </div>
+
+    <div id="dlr_data">
+        <!-- Display the DLR data here -->
+    </div>
+
+</body>
+</html>
